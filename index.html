@@ -26,21 +26,46 @@
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
             transition: all 0.2s ease-in-out;
         }
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            cursor: pointer;
+            border: 1px solid transparent;
+        }
         .btn-primary {
             background-color: #3b82f6;
             color: white;
-            font-weight: 700;
+        }
+        .btn-primary:hover {
+            background-color: #2563eb;
         }
         .btn-secondary {
             background-color: #6b7280;
             color: white;
-            font-weight: 700;
+        }
+        .btn-secondary:hover {
+            background-color: #4b5563;
         }
         .btn-danger {
             background-color: #ef4444;
             color: white;
-            font-weight: 700;
         }
+         .btn-danger:hover {
+            background-color: #dc2626;
+        }
+        .btn-toggle-group .btn {
+            background-color: #e5e7eb;
+            color: #4b5563;
+            border-color: #d1d5db;
+        }
+        .btn-toggle-group .btn.active {
+            background-color: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+
         .table-header {
             background-color: #f3f4f6;
         }
@@ -58,8 +83,8 @@
                 <p id="turn-display" class="text-lg text-gray-600 font-semibold text-center md:text-left"></p>
             </div>
             <div class="flex gap-4 justify-center md:justify-end">
-                <button id="settings-btn" class="bg-gray-500 text-white px-4 py-2 rounded-lg shadow-md hover:bg-gray-600 transition-colors">設定</button>
-                <button id="reset-game-btn" class="btn-danger px-4 py-2 rounded-lg shadow-md hover:bg-red-600 transition-colors">ゲームリセット</button>
+                <button id="settings-btn" class="btn bg-gray-500 text-white hover:bg-gray-600 shadow-md">設定</button>
+                <button id="reset-game-btn" class="btn btn-danger hover:bg-red-600 shadow-md">ゲームリセット</button>
             </div>
         </header>
 
@@ -80,11 +105,12 @@
         </section>
 
         <!-- アクションボタン (スマホ対応) -->
-        <section class="flex flex-col md:flex-row flex-wrap gap-4 mb-6">
-            <button id="add-transaction-btn" class="btn-primary w-full md:flex-grow px-6 py-3 rounded-lg shadow-md hover:bg-blue-600 transition-colors">収入・支出を記録</button>
-            <button id="manage-employees-btn" class="btn-secondary w-full md:flex-grow px-6 py-3 rounded-lg shadow-md hover:bg-gray-700 transition-colors">人材管理</button>
-            <button id="manage-debt-btn" class="btn-secondary w-full md:flex-grow px-6 py-3 rounded-lg shadow-md hover:bg-gray-700 transition-colors">借入・返済</button>
-            <button id="next-turn-btn" class="bg-green-500 text-white font-bold w-full md:flex-grow px-6 py-3 rounded-lg shadow-xl hover:bg-green-600 transition-colors text-lg">ターン終了</button>
+        <section class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <button id="add-transaction-btn" class="btn btn-primary py-3 shadow-md">収入/支出</button>
+            <button id="manage-employees-btn" class="btn btn-secondary py-3 shadow-md">人材管理</button>
+            <button id="manage-business-btn" class="btn btn-secondary py-3 shadow-md">事業管理</button>
+            <button id="manage-debt-btn" class="btn btn-secondary py-3 shadow-md">借入/返済</button>
+            <button id="next-turn-btn" class="bg-green-500 text-white font-bold col-span-full py-3 rounded-lg shadow-xl hover:bg-green-600 transition-colors text-lg">ターン終了</button>
         </section>
 
         <!-- 財務諸表 -->
@@ -96,12 +122,12 @@
                     <button data-tab="cs" class="tab-button flex-1 md:flex-initial py-2 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition-colors">キャッシュフロー (CS)</button>
                 </nav>
             </div>
-            <div class="flex justify-end mb-4">
-                 <select id="period-selector" class="rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 w-full md:w-auto">
-                    <option value="currentTurn">今月</option>
-                    <option value="currentYear">今年度</option>
-                    <option value="total" selected>通算</option>
-                </select>
+            <!-- UI改善: プルダウンをボタングループに変更 -->
+            <div id="period-selector" class="btn-toggle-group flex justify-center md:justify-end mb-4">
+                <button data-period="lastTurn" id="last-turn-btn" class="btn rounded-r-none">先月</button>
+                <button data-period="currentTurn" class="btn rounded-none">今月</button>
+                <button data-period="currentYear" class="btn rounded-none">今年度</button>
+                <button data-period="total" class="btn rounded-l-none active">通算</button>
             </div>
             <div id="report-content" class="overflow-x-auto">
                 <!-- 財務諸表テーブルがここに挿入されます -->
@@ -109,65 +135,88 @@
         </section>
     </div>
 
-    <!-- モーダル: 収入・支出の記録 -->
+    <!-- モーダル: 収入・支出の記録 (UI改善) -->
     <div id="transaction-modal" class="modal-overlay fixed inset-0 flex items-center justify-center p-4 hidden">
         <div class="card w-full max-w-md p-6">
             <h2 class="text-xl font-bold mb-4">収入・支出の記録</h2>
             <form id="transaction-form">
                 <div class="mb-4">
-                    <label class="block mb-2">種類</label>
-                    <select id="transaction-type" class="w-full p-2 border rounded">
-                        <option value="income">収入</option>
-                        <option value="expense">支出</option>
-                    </select>
+                    <label class="block mb-2 font-semibold">種類</label>
+                    <div id="transaction-type-selector" class="btn-toggle-group flex">
+                        <button type="button" data-type="expense" class="btn w-1/2 rounded-r-none active">支出</button>
+                        <button type="button" data-type="income" class="btn w-1/2 rounded-l-none">収入</button>
+                    </div>
                 </div>
                 <div class="mb-4">
-                    <label class="block mb-2">カテゴリ</label>
-                    <select id="transaction-category" class="w-full p-2 border rounded">
-                        <!-- カテゴリは動的に設定されます -->
-                    </select>
+                    <label class="block mb-2 font-semibold">カテゴリ</label>
+                    <div id="transaction-category-selector" class="grid grid-cols-2 gap-2 btn-toggle-group">
+                        <!-- カテゴリボタンがここに挿入されます -->
+                    </div>
                 </div>
                 <div class="mb-4">
-                    <label class="block mb-2">金額 (万円)</label>
+                    <label class="block mb-2 font-semibold">金額 (万円)</label>
                     <input type="number" id="transaction-amount" class="w-full p-2 border rounded" placeholder="例: 100" required>
                 </div>
-                <div class="flex justify-end gap-4">
-                    <button type="button" id="cancel-transaction" class="btn-secondary px-4 py-2 rounded-lg">キャンセル</button>
-                    <button type="submit" class="btn-primary px-4 py-2 rounded-lg">記録する</button>
+                <div class="flex justify-end gap-4 mt-6">
+                    <button type="button" id="cancel-transaction" class="btn btn-secondary">キャンセル</button>
+                    <button type="submit" class="btn btn-primary">記録する</button>
                 </div>
             </form>
         </div>
     </div>
     
-    <!-- モーダル: 人材管理 -->
+    <!-- モーダル: 人材管理 (UI改善) -->
     <div id="employees-modal" class="modal-overlay fixed inset-0 flex items-center justify-center p-4 hidden">
         <div class="card w-full max-w-lg p-6">
             <h2 class="text-xl font-bold mb-4">人材管理</h2>
             <div class="mb-4">
                 <h3 class="font-semibold mb-2">新規雇用</h3>
-                <form id="hire-form" class="flex flex-col sm:flex-row gap-4 items-center">
-                    <select id="hire-cost" class="w-full sm:flex-grow p-2 border rounded">
-                        <option value="100">人件費: 100万円/月</option>
-                        <option value="150">人件費: 150万円/月</option>
-                        <option value="200">人件費: 200万円/月</option>
-                        <option value="300">人件費: 300万円/月</option>
-                    </select>
-                    <button type="submit" class="btn-primary w-full sm:w-auto px-4 py-2 rounded-lg">雇用</button>
-                </form>
+                <p class="text-sm text-gray-500 mb-2">雇用したい人材の人件費をタップしてください。</p>
+                <div id="hire-options" class="grid grid-cols-2 gap-4">
+                     <button data-cost="100" class="btn bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-200">100万円/月</button>
+                     <button data-cost="150" class="btn bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-200">150万円/月</button>
+                     <button data-cost="200" class="btn bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-200">200万円/月</button>
+                     <button data-cost="300" class="btn bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-200">300万円/月</button>
+                </div>
             </div>
             <div>
                 <h3 class="font-semibold mb-2">雇用中の人材 (合計人件費: <span id="total-personnel-cost"></span>万円/月)</h3>
-                <ul id="employee-list" class="space-y-2 max-h-60 overflow-y-auto">
+                <ul id="employee-list" class="space-y-2 max-h-60 overflow-y-auto p-1">
                     <!-- 雇用中の人材リストがここに挿入されます -->
                 </ul>
             </div>
             <div class="flex justify-end mt-6">
-                <button type="button" id="close-employees-modal" class="btn-secondary px-4 py-2 rounded-lg">閉じる</button>
+                <button type="button" id="close-employees-modal" class="btn btn-secondary">閉じる</button>
             </div>
         </div>
     </div>
 
-    <!-- モーダル: 借入・返済 -->
+    <!-- ★新規追加: 事業管理モーダル -->
+    <div id="business-modal" class="modal-overlay fixed inset-0 flex items-center justify-center p-4 hidden">
+        <div class="card w-full max-w-lg p-6">
+            <h2 class="text-xl font-bold mb-4">事業管理</h2>
+            <form id="business-form" class="mb-4 border-b pb-4">
+                <h3 class="font-semibold mb-2">新規事業の登録</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+                    <input type="text" id="business-name" placeholder="事業名" class="p-2 border rounded col-span-full">
+                    <input type="number" id="business-revenue" placeholder="月間売上(万円)" class="p-2 border rounded">
+                    <input type="number" id="business-cost" placeholder="月間費用(万円)" class="p-2 border rounded">
+                    <button type="submit" class="btn btn-primary">登録</button>
+                </div>
+            </form>
+            <div>
+                 <h3 class="font-semibold mb-2">登録済みの事業</h3>
+                 <ul id="business-list" class="space-y-2 max-h-60 overflow-y-auto p-1">
+                    <!-- 登録済みの事業リストがここに挿入されます -->
+                 </ul>
+            </div>
+            <div class="flex justify-end mt-6">
+                <button type="button" id="close-business-modal" class="btn btn-secondary">閉じる</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- モーダル: 借入・返済 (UI改善) -->
     <div id="debt-modal" class="modal-overlay fixed inset-0 flex items-center justify-center p-4 hidden">
         <div class="card w-full max-w-md p-6">
             <h2 class="text-xl font-bold mb-4">借入・返済</h2>
@@ -176,20 +225,20 @@
                 <p id="current-debt" class="text-2xl font-bold"></p>
             </div>
             <form id="debt-form">
-                <div class="mb-4">
-                    <label class="block mb-2">操作</label>
-                    <select id="debt-action" class="w-full p-2 border rounded">
-                        <option value="borrow">借入</option>
-                        <option value="repay">返済</option>
-                    </select>
+                 <div class="mb-4">
+                    <label class="block mb-2 font-semibold">操作</label>
+                    <div id="debt-action-selector" class="btn-toggle-group flex">
+                        <button type="button" data-action="borrow" class="btn w-1/2 rounded-r-none active">借入</button>
+                        <button type="button" data-action="repay" class="btn w-1/2 rounded-l-none">返済</button>
+                    </div>
                 </div>
                 <div class="mb-4">
-                    <label class="block mb-2">金額 (万円)</label>
+                    <label class="block mb-2 font-semibold">金額 (万円)</label>
                     <input type="number" id="debt-amount" class="w-full p-2 border rounded" placeholder="例: 1000" required>
                 </div>
-                <div class="flex justify-end gap-4">
-                    <button type="button" id="cancel-debt" class="btn-secondary px-4 py-2 rounded-lg">キャンセル</button>
-                    <button type="submit" class="btn-primary px-4 py-2 rounded-lg">実行</button>
+                <div class="flex justify-end gap-4 mt-6">
+                    <button type="button" id="cancel-debt" class="btn btn-secondary">キャンセル</button>
+                    <button type="submit" class="btn btn-primary">実行</button>
                 </div>
             </form>
         </div>
@@ -204,11 +253,50 @@
                     <label for="interest-rate-input" class="block mb-2">借入の年利 (%)</label>
                     <input type="number" id="interest-rate-input" class="w-full p-2 border rounded" placeholder="例: 5" step="0.1" required>
                 </div>
+                <!-- ★新規追加: ゲーム期間設定 -->
+                <div class="mb-4">
+                    <label for="game-length-input" class="block mb-2">ゲームの長さ (年)</label>
+                    <input type="number" id="game-length-input" class="w-full p-2 border rounded" placeholder="例: 3" min="1" max="5" step="1" required>
+                </div>
                 <div class="flex justify-end gap-4">
-                    <button type="button" id="cancel-settings" class="btn-secondary px-4 py-2 rounded-lg">キャンセル</button>
-                    <button type="submit" class="btn-primary px-4 py-2 rounded-lg">保存</button>
+                    <button type="button" id="cancel-settings" class="btn btn-secondary">キャンセル</button>
+                    <button type="submit" class="btn btn-primary">保存</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- ★新規追加: 確認モーダル -->
+    <div id="confirm-modal" class="modal-overlay fixed inset-0 flex items-center justify-center p-4 hidden">
+        <div class="card w-full max-w-sm p-6 text-center">
+            <p id="confirm-message" class="text-lg mb-6"></p>
+            <div class="flex justify-center gap-4">
+                <button id="confirm-no-btn" class="btn btn-secondary w-24">いいえ</button>
+                <button id="confirm-yes-btn" class="btn btn-danger w-24">はい</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ★新規追加: リザルトモーダル -->
+    <div id="results-modal" class="modal-overlay fixed inset-0 flex items-center justify-center p-4 hidden">
+        <div class="card w-full max-w-lg p-8 text-center">
+            <h2 class="text-4xl font-bold mb-4 text-yellow-500">ゲーム終了！</h2>
+            <h3 class="text-2xl font-semibold mb-6">最終結果</h3>
+            <div class="space-y-4 text-left text-lg bg-gray-50 p-4 rounded-lg mb-8">
+                <div class="flex justify-between">
+                    <span class="font-semibold">累計純利益:</span>
+                    <span id="result-profit" class="font-bold"></span>
+                </div>
+                <div class="flex justify-between border-t pt-4">
+                    <span class="font-semibold">事業将来価値ボーナス:</span>
+                    <span id="result-bonus" class="font-bold text-green-600"></span>
+                </div>
+                <div class="flex justify-between text-2xl font-bold border-t-2 pt-4 mt-4 text-blue-600">
+                    <span>最終スコア:</span>
+                    <span id="result-total-score"></span>
+                </div>
+            </div>
+            <button id="new-game-btn" class="btn btn-primary w-full py-3 text-lg">新しいゲームを始める</button>
         </div>
     </div>
 
@@ -218,6 +306,11 @@
 
             // --- 状態管理 (State Management) ---
             let gameState;
+            let uiState = {
+                transaction: { type: 'expense', category: '' },
+                debtAction: 'borrow',
+                reportPeriod: 'total'
+            };
 
             // --- DOM要素 ---
             const dom = {
@@ -230,33 +323,43 @@
                 reportContent: document.getElementById('report-content'),
                 transactionModal: document.getElementById('transaction-modal'),
                 transactionForm: document.getElementById('transaction-form'),
-                transactionType: document.getElementById('transaction-type'),
-                transactionCategory: document.getElementById('transaction-category'),
+                transactionTypeSelector: document.getElementById('transaction-type-selector'),
+                transactionCategorySelector: document.getElementById('transaction-category-selector'),
                 transactionAmount: document.getElementById('transaction-amount'),
                 employeesModal: document.getElementById('employees-modal'),
-                hireForm: document.getElementById('hire-form'),
-                hireCost: document.getElementById('hire-cost'),
+                hireOptions: document.getElementById('hire-options'),
                 totalPersonnelCost: document.getElementById('total-personnel-cost'),
                 employeeList: document.getElementById('employee-list'),
                 debtModal: document.getElementById('debt-modal'),
                 debtForm: document.getElementById('debt-form'),
                 currentDebt: document.getElementById('current-debt'),
-                debtAction: document.getElementById('debt-action'),
+                debtActionSelector: document.getElementById('debt-action-selector'),
                 debtAmount: document.getElementById('debt-amount'),
-                // 設定モーダル用のDOM要素を追加
                 settingsModal: document.getElementById('settings-modal'),
                 settingsForm: document.getElementById('settings-form'),
                 interestRateInput: document.getElementById('interest-rate-input'),
+                confirmModal: document.getElementById('confirm-modal'),
+                confirmMessage: document.getElementById('confirm-message'),
+                confirmYesBtn: document.getElementById('confirm-yes-btn'),
+                confirmNoBtn: document.getElementById('confirm-no-btn'),
+                businessModal: document.getElementById('business-modal'),
+                businessForm: document.getElementById('business-form'),
+                businessList: document.getElementById('business-list'),
+                gameLengthInput: document.getElementById('game-length-input'),
+                // ★新規追加: リザルトDOM
+                resultsModal: document.getElementById('results-modal'),
+                resultProfit: document.getElementById('result-profit'),
+                resultBonus: document.getElementById('result-bonus'),
+                resultTotalScore: document.getElementById('result-total-score'),
             };
 
             // --- 定数 ---
             const CONSTANTS = {
-                TOTAL_TURNS: 36,
-                INITIAL_CASH: 5000, // 変更点: 初期資金を5000万円に
-                MONTHLY_SUPPORT: 500, // 会社からの支援
-                BUSINESS_INCOME: 0, // 事業収入（将来的に設定可能にする）
-                DEFAULT_INTEREST_RATE: 0.05, // 変更点: デフォルト年利5%
-                RETIREMENT_COST_MULTIPLIER: 3, // 退職金倍率
+                INITIAL_CASH: 5000, 
+                MONTHLY_SUPPORT: 500, 
+                DEFAULT_INTEREST_RATE: 0.05, 
+                RETIREMENT_COST_MULTIPLIER: 3, 
+                DEFAULT_TOTAL_TURNS: 36,
             };
             
             const CATEGORIES = {
@@ -277,42 +380,42 @@
                 const savedState = localStorage.getItem('boardGameCalcState');
                 if (savedState) {
                     gameState = JSON.parse(savedState);
-                    // 後方互換性のため、interestRateが未定義の場合にデフォルト値を設定
-                    if (typeof gameState.interestRate === 'undefined') {
-                        gameState.interestRate = CONSTANTS.DEFAULT_INTEREST_RATE;
-                    }
+                    // 後方互換性のためのデフォルト値設定
+                    if (typeof gameState.interestRate === 'undefined') gameState.interestRate = CONSTANTS.DEFAULT_INTEREST_RATE;
+                    if (typeof gameState.totalTurns === 'undefined') gameState.totalTurns = CONSTANTS.DEFAULT_TOTAL_TURNS;
+                    if (typeof gameState.businesses === 'undefined') gameState.businesses = [];
                 } else {
-                    // 初回起動時は確認なしで新しいゲーム状態を作成する
-                    gameState = {
-                        currentTurn: 1,
-                        cash: CONSTANTS.INITIAL_CASH,
-                        employees: [], // {id: Date.now(), cost: 100}
-                        transactions: [], // {turn, type, category, amount}
-                        debt: 0,
-                        interestRate: CONSTANTS.DEFAULT_INTEREST_RATE, // 金利を状態として追加
-                    };
-                    saveGame(); // 新しく作成した状態を保存
+                    createNewGame();
                 }
+                updatePeriodSelectorUI();
                 renderAll();
             }
             
-            function resetGame() {
-                // この関数はリセットボタンのクリックによってのみ呼び出される
-                if(confirm('本当にゲームをリセットしますか？全てのデータが削除されます。')) {
-                    gameState = {
-                        currentTurn: 1,
-                        cash: CONSTANTS.INITIAL_CASH,
-                        employees: [], // {id: Date.now(), cost: 100}
-                        transactions: [], // {turn, type, category, amount}
-                        debt: 0,
-                        interestRate: CONSTANTS.DEFAULT_INTEREST_RATE, // 金利をリセット
-                    };
+            function createNewGame() {
+                gameState = {
+                    currentTurn: 1,
+                    cash: CONSTANTS.INITIAL_CASH,
+                    employees: [],
+                    businesses: [],
+                    transactions: [],
+                    debt: 0,
+                    interestRate: CONSTANTS.DEFAULT_INTEREST_RATE,
+                    totalTurns: CONSTANTS.DEFAULT_TOTAL_TURNS,
+                };
+            }
+            
+            async function resetGame() {
+                const confirmed = await showConfirmation(
+                    '本当にゲームをリセットしますか？全てのデータが削除されます。',
+                    { danger: true }
+                );
+                if(confirmed) {
+                    createNewGame();
                     saveGame();
                     renderAll();
                 }
             }
 
-            // --- 状態の保存と読み込み ---
             function saveGame() {
                 localStorage.setItem('boardGameCalcState', JSON.stringify(gameState));
             }
@@ -322,25 +425,41 @@
                 renderDashboard();
                 renderReport();
                 renderEmployeeList();
+                renderBusinessList();
             }
 
             function renderDashboard() {
                 const year = Math.floor((gameState.currentTurn - 1) / 12) + 1;
                 const month = ((gameState.currentTurn - 1) % 12) + 1;
-                dom.turnDisplay.textContent = ` ${year}年目 ${month}月 (${gameState.currentTurn}/${CONSTANTS.TOTAL_TURNS})`;
+                dom.turnDisplay.textContent = ` ${year}年目 ${month}月 (${gameState.currentTurn}/${gameState.totalTurns})`;
                 
                 const formatYen = (val) => `${val.toLocaleString()}万円`;
-                const { pl, bs, cs } = calculateFinancials('currentYear');
+                const { pl, bs } = calculateFinancials('currentYear');
                 
                 dom.cashBalance.textContent = formatYen(gameState.cash);
                 dom.currentPeriodProfit.textContent = formatYen(pl.profit);
                 dom.totalAssets.textContent = formatYen(bs.totalAssets);
+
+                const lastTurnBtn = document.getElementById('last-turn-btn');
+                if (lastTurnBtn) {
+                    if (gameState.currentTurn <= 1) {
+                        lastTurnBtn.disabled = true;
+                        lastTurnBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                        if (uiState.reportPeriod === 'lastTurn') {
+                            uiState.reportPeriod = 'currentTurn';
+                            updatePeriodSelectorUI();
+                            renderReport();
+                        }
+                    } else {
+                        lastTurnBtn.disabled = false;
+                        lastTurnBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    }
+                }
             }
             
             function renderReport() {
                 const activeTab = dom.reportTabs.querySelector('.active').dataset.tab;
-                const period = dom.periodSelector.value;
-                const { pl, bs, cs } = calculateFinancials(period);
+                const { pl, bs, cs } = calculateFinancials(uiState.reportPeriod);
                 
                 let html = '';
                 if (activeTab === 'pl') html = generatePLHtml(pl);
@@ -352,7 +471,6 @@
             
             function generatePLHtml(pl) {
                 const format = (val) => (val !== 0 ? val.toLocaleString() : '-');
-                // スマホ対応: text-sm md:text-base, p-1 md:p-2
                 return `
                     <table class="w-full text-left text-sm md:text-base">
                         <thead class="table-header">
@@ -365,6 +483,7 @@
                             <tr class="border-b font-bold"><td class="p-1 md:p-2">収益合計</td><td class="p-1 md:p-2 text-right">${format(pl.totalRevenue)}</td></tr>
 
                             <tr class="border-b"><td class="p-1 md:p-2 font-semibold text-red-600" colspan="2">費用</td></tr>
+                            <tr class="border-b"><td class="p-1 md:p-2 pl-4 md:pl-6">事業費用</td><td class="p-1 md:p-2 text-right">${format(pl.businessCost)}</td></tr>
                             <tr class="border-b"><td class="p-1 md:p-2 pl-4 md:pl-6">人件費</td><td class="p-1 md:p-2 text-right">${format(pl.personnelCost)}</td></tr>
                             <tr class="border-b"><td class="p-1 md:p-2 pl-4 md:pl-6">退職金</td><td class="p-1 md:p-2 text-right">${format(pl.retirementCost)}</td></tr>
                             <tr class="border-b"><td class="p-1 md:p-2 pl-4 md:pl-6">仮説検証費用</td><td class="p-1 md:p-2 text-right">${format(pl.hypothesisCost)}</td></tr>
@@ -381,7 +500,6 @@
 
             function generateBSHtml(bs) {
                 const format = (val) => (val !== 0 ? val.toLocaleString() : '-');
-                 // スマホ対応: BSの構造を縦積みに変更
                 return `
                     <table class="w-full text-left text-sm md:text-base">
                         <thead class="table-header">
@@ -406,7 +524,6 @@
 
             function generateCSHtml(cs) {
                 const format = (val) => (val !== 0 ? val.toLocaleString() : '-');
-                // スマホ対応: text-sm md:text-base, p-1 md:p-2
                 return `
                     <table class="w-full text-left text-sm md:text-base">
                         <thead class="table-header">
@@ -416,6 +533,7 @@
                              <tr class="border-b"><td class="p-1 md:p-2 font-semibold">営業活動によるCF</td><td class="p-1 md:p-2 text-right font-semibold">${format(cs.operatingCF)}</td></tr>
                              <tr class="border-b"><td class="p-1 md:p-2 pl-4 md:pl-6">事業収入</td><td class="p-1 md:p-2 text-right text-green-600">+${format(cs.operating.businessIncome)}</td></tr>
                              <tr class="border-b"><td class="p-1 md:p-2 pl-4 md:pl-6">雑費収入</td><td class="p-1 md:p-2 text-right text-green-600">+${format(cs.operating.miscIncome)}</td></tr>
+                             <tr class="border-b"><td class="p-1 md:p-2 pl-4 md:pl-6">事業費用</td><td class="p-1 md:p-2 text-right text-red-600">-${format(cs.operating.businessCost)}</td></tr>
                              <tr class="border-b"><td class="p-1 md:p-2 pl-4 md:pl-6">人件費</td><td class="p-1 md:p-2 text-right text-red-600">-${format(cs.operating.personnelCost)}</td></tr>
                              <tr class="border-b"><td class="p-1 md:p-2 pl-4 md:pl-6">退職金</td><td class="p-1 md:p-2 text-right text-red-600">-${format(cs.operating.retirementCost)}</td></tr>
                              <tr class="border-b"><td class="p-1 md:p-2 pl-4 md:pl-6">支払利息</td><td class="p-1 md:p-2 text-right text-red-600">-${format(cs.operating.interestExpense)}</td></tr>
@@ -452,9 +570,30 @@
                     li.className = 'flex justify-between items-center bg-gray-100 p-2 rounded';
                     li.innerHTML = `
                         <span>人件費: ${employee.cost}万円/月</span>
-                        <button data-id="${employee.id}" class="fire-btn btn-danger px-3 py-1 text-sm rounded">退職</button>
+                        <button data-id="${employee.id}" class="fire-btn btn btn-danger btn-sm py-1 px-2 text-xs">退職</button>
                     `;
                     dom.employeeList.appendChild(li);
+                });
+            }
+
+            function renderBusinessList() {
+                dom.businessList.innerHTML = '';
+                 if (gameState.businesses.length === 0) {
+                    dom.businessList.innerHTML = '<li class="text-gray-500 text-center p-4">現在、登録済みの事業はありません。</li>';
+                    return;
+                }
+                gameState.businesses.forEach(biz => {
+                    const li = document.createElement('li');
+                    li.className = 'flex justify-between items-center bg-gray-100 p-2 rounded';
+                    li.innerHTML = `
+                        <div class="flex-grow">
+                            <p class="font-semibold">${biz.name}</p>
+                            <p class="text-sm text-green-600">売上: ${biz.revenue}万/月</p>
+                            <p class="text-sm text-red-600">費用: ${biz.cost}万/月</p>
+                        </div>
+                        <button data-id="${biz.id}" class="delete-business-btn btn btn-danger btn-sm py-1 px-2 text-xs">削除</button>
+                    `;
+                    dom.businessList.appendChild(li);
                 });
             }
 
@@ -463,39 +602,38 @@
                 let startTurn = 1;
                 let endTurn = gameState.currentTurn;
                 
-                if (period === 'currentTurn') {
+                if (period === 'lastTurn') {
+                    startTurn = Math.max(1, gameState.currentTurn - 1);
+                    endTurn = startTurn + 1;
+                } else if (period === 'currentTurn') {
                     startTurn = gameState.currentTurn;
+                    endTurn = startTurn + 1;
                 } else if (period === 'currentYear') {
                     const currentYear = Math.floor((gameState.currentTurn - 1) / 12);
                     startTurn = currentYear * 12 + 1;
                 }
                 
                 const relevantTransactions = gameState.transactions.filter(t => t.turn >= startTurn && t.turn < endTurn);
-                // 期間内のターン数を正しく計算
-                const turnCount = (period === 'currentTurn') ? 1 : endTurn - startTurn;
                 
-                // PL
                 const pl = {
-                    businessIncome: turnCount * CONSTANTS.BUSINESS_INCOME,
-                    miscIncome: 0,
-                    personnelCost: 0,
-                    retirementCost: 0,
-                    hypothesisCost: 0,
-                    constructionCost: 0,
-                    interestExpense: 0,
-                    miscExpense: 0,
+                    businessIncome: 0, businessCost: 0, miscIncome: 0, personnelCost: 0, retirementCost: 0, 
+                    hypothesisCost: 0, constructionCost: 0, interestExpense: 0, miscExpense: 0,
                 };
                 
-                // CS
                 const cs = {
-                    operating: { businessIncome: pl.businessIncome, miscIncome: 0, personnelCost: 0, retirementCost: 0, interestExpense: 0, miscExpense: 0 },
+                    operating: { businessIncome: 0, businessCost: 0, miscIncome: 0, personnelCost: 0, retirementCost: 0, interestExpense: 0, miscExpense: 0 },
                     investing: { hypothesisCost: 0, constructionCost: 0 },
-                    financing: { support: turnCount * CONSTANTS.MONTHLY_SUPPORT, externalInvestment: 0, borrowing: 0, repayment: 0 }
+                    financing: { support: 0, externalInvestment: 0, borrowing: 0, repayment: 0 }
                 };
+
+                for (let i = startTurn; i < endTurn; i++) {
+                    cs.financing.support += CONSTANTS.MONTHLY_SUPPORT;
+                }
                 
-                // トランザクションを集計
                 relevantTransactions.forEach(t => {
                     switch(t.category) {
+                        case 'business_income': pl.businessIncome += t.amount; cs.operating.businessIncome += t.amount; break;
+                        case 'business_cost': pl.businessCost += t.amount; cs.operating.businessCost += t.amount; break;
                         case 'misc_income': pl.miscIncome += t.amount; cs.operating.miscIncome += t.amount; break;
                         case 'personnel_cost': pl.personnelCost += t.amount; cs.operating.personnelCost += t.amount; break;
                         case 'retirement_cost': pl.retirementCost += t.amount; cs.operating.retirementCost += t.amount; break;
@@ -510,15 +648,14 @@
                 });
 
                 pl.totalRevenue = pl.businessIncome + pl.miscIncome;
-                pl.totalExpense = pl.personnelCost + pl.retirementCost + pl.hypothesisCost + pl.constructionCost + pl.interestExpense + pl.miscExpense;
+                pl.totalExpense = pl.businessCost + pl.personnelCost + pl.retirementCost + pl.hypothesisCost + pl.constructionCost + pl.interestExpense + pl.miscExpense;
                 pl.profit = pl.totalRevenue - pl.totalExpense;
                 
-                cs.operatingCF = cs.operating.businessIncome + cs.operating.miscIncome - cs.operating.personnelCost - cs.operating.retirementCost - cs.operating.interestExpense - cs.operating.miscExpense;
+                cs.operatingCF = cs.operating.businessIncome + cs.operating.miscIncome - (cs.operating.businessCost + cs.operating.personnelCost + cs.operating.retirementCost + cs.operating.interestExpense + cs.operating.miscExpense);
                 cs.investingCF = -cs.investing.hypothesisCost - cs.investing.constructionCost;
                 cs.financingCF = cs.financing.support + cs.financing.externalInvestment + cs.financing.borrowing - cs.financing.repayment;
                 cs.netCashFlow = cs.operatingCF + cs.investingCF + cs.financingCF;
                 
-                // BS (これは常に通算)
                 const allTransactions = gameState.transactions.filter(t => t.turn < gameState.currentTurn);
                 const bs = { cash: gameState.cash, debt: gameState.debt };
                 bs.investmentValue = allTransactions
@@ -528,30 +665,22 @@
                     .filter(t => t.category === 'external_investment')
                     .reduce((sum, t) => sum + t.amount, 0);
 
-                // 無限再帰を避けるために、ここで通算利益を直接計算する
-                const allTurnsCount = gameState.currentTurn - 1;
-                let totalRevenue_forBS = allTurnsCount * CONSTANTS.BUSINESS_INCOME;
+                let totalRevenue_forBS = 0;
                 let totalExpense_forBS = 0;
                 allTransactions.forEach(t => {
                     switch(t.category) {
-                        case 'misc_income': totalRevenue_forBS += t.amount; break;
-                        case 'personnel_cost':
-                        case 'retirement_cost':
-                        case 'hypothesis_testing':
-                        case 'business_construction':
-                        case 'interest_expense':
-                        case 'misc_expense':
-                            totalExpense_forBS += t.amount;
-                            break;
+                        case 'business_income': case 'misc_income':
+                            totalRevenue_forBS += t.amount; break;
+                        case 'business_cost': case 'personnel_cost': case 'retirement_cost': case 'hypothesis_testing':
+                        case 'business_construction': case 'interest_expense': case 'misc_expense':
+                            totalExpense_forBS += t.amount; break;
                     }
                 });
                 bs.retainedEarnings = totalRevenue_forBS - totalExpense_forBS;
-
                 bs.totalAssets = bs.cash + bs.investmentValue;
                 bs.totalLiabilities = bs.debt;
                 bs.totalNetAssets = bs.externalInvestment + bs.retainedEarnings;
                 bs.totalLiabilitiesAndNetAssets = bs.totalLiabilities + bs.totalNetAssets;
-                // 丸め誤差を調整
                 if (Math.abs(bs.totalAssets - bs.totalLiabilitiesAndNetAssets) < 0.01) {
                     bs.totalLiabilitiesAndNetAssets = bs.totalAssets;
                 }
@@ -561,52 +690,64 @@
 
             // --- イベントハンドラ ---
             function handleNextTurn() {
-                if (gameState.currentTurn >= CONSTANTS.TOTAL_TURNS) {
-                    alert('ゲームは終了しました！');
+                if (gameState.currentTurn > gameState.totalTurns) return;
+
+                if (gameState.currentTurn === gameState.totalTurns) {
+                    showResults();
+                    gameState.currentTurn++; // ゲーム終了状態にする
+                    saveGame();
                     return;
                 }
                 
-                // 1. 支援金収入
-                gameState.cash += CONSTANTS.MONTHLY_SUPPORT;
+                gameState.currentTurn++;
 
-                // 2. 事業収入
-                gameState.cash += CONSTANTS.BUSINESS_INCOME;
+                // 支援金
+                gameState.cash += CONSTANTS.MONTHLY_SUPPORT;
                 
-                // 3. 人件費支出
+                // 事業からの収支
+                const totalBusinessRevenue = gameState.businesses.reduce((sum, b) => sum + b.revenue, 0);
+                const totalBusinessCost = gameState.businesses.reduce((sum, b) => sum + b.cost, 0);
+                if (totalBusinessRevenue > 0) {
+                    gameState.cash += totalBusinessRevenue;
+                    addTransaction('income', 'business_income', totalBusinessRevenue, gameState.currentTurn -1);
+                }
+                if (totalBusinessCost > 0) {
+                    gameState.cash -= totalBusinessCost;
+                    addTransaction('expense', 'business_cost', totalBusinessCost, gameState.currentTurn -1);
+                }
+
+                // 人件費
                 const personnelCost = gameState.employees.reduce((sum, e) => sum + e.cost, 0);
                 if (personnelCost > 0) {
                     gameState.cash -= personnelCost;
-                    addTransaction('expense', 'personnel_cost', personnelCost, gameState.currentTurn);
+                    addTransaction('expense', 'personnel_cost', personnelCost, gameState.currentTurn -1);
                 }
                 
-                // 4. 金利支出 (gameStateから金利を取得するよう変更)
+                // 利息
                 if (gameState.debt > 0) {
                     const monthlyInterestRate = gameState.interestRate / 12;
                     const interest = Math.round(gameState.debt * monthlyInterestRate);
                     gameState.cash -= interest;
-                    addTransaction('expense', 'interest_expense', interest, gameState.currentTurn);
+                    addTransaction('expense', 'interest_expense', interest, gameState.currentTurn -1);
                 }
 
-                gameState.currentTurn++;
                 saveGame();
                 renderAll();
             }
             
             function addTransaction(type, category, amount, turn) {
-                 gameState.transactions.push({
-                    turn: turn,
-                    type,
-                    category,
-                    amount
-                });
+                 gameState.transactions.push({ turn, type, category, amount });
             }
 
             function handleTransactionSubmit(e) {
                 e.preventDefault();
-                const type = dom.transactionType.value;
-                const category = dom.transactionCategory.value;
                 const amount = parseInt(dom.transactionAmount.value);
+                const { type, category } = uiState.transaction;
 
+                if (!category) {
+                    alert('カテゴリを選択してください。');
+                    return;
+                }
                 if (isNaN(amount) || amount <= 0) {
                     alert('有効な金額を入力してください。');
                     return;
@@ -626,19 +767,26 @@
                 saveGame();
                 renderAll();
                 closeModal(dom.transactionModal);
-                dom.transactionForm.reset();
             }
 
-            function handleHireSubmit(e) {
-                e.preventDefault();
-                const cost = parseInt(dom.hireCost.value);
-                const newEmployee = { id: Date.now(), cost };
-                gameState.employees.push(newEmployee);
-                saveGame();
-                renderEmployeeList();
+            async function handleHireClick(e) {
+                const target = e.target.closest('button');
+                if (!target || !target.dataset.cost) return;
+                
+                const cost = parseInt(target.dataset.cost);
+                const confirmed = await showConfirmation(
+                    `人件費 ${cost}万円/月 の人材を新規に雇用しますか？`,
+                    { yesText: 'はい、雇用します' }
+                );
+                if (confirmed) {
+                    const newEmployee = { id: Date.now(), cost };
+                    gameState.employees.push(newEmployee);
+                    saveGame();
+                    renderEmployeeList();
+                }
             }
             
-            function handleFireEmployee(e) {
+            async function handleFireEmployee(e) {
                 if (!e.target.classList.contains('fire-btn')) return;
                 const employeeId = parseInt(e.target.dataset.id);
                 const employeeIndex = gameState.employees.findIndex(emp => emp.id === employeeId);
@@ -652,7 +800,11 @@
                     return;
                 }
                 
-                if (confirm(`人件費 ${employee.cost}万円/月の従業員を退職させますか？\n退職金として ${retirementCost}万円 が支出されます。`)) {
+                const confirmed = await showConfirmation(
+                    `人件費 ${employee.cost}万円/月の従業員を退職させますか？\n退職金として ${retirementCost}万円 が支出されます。`,
+                    { danger: true }
+                );
+                if (confirmed) {
                     gameState.cash -= retirementCost;
                     addTransaction('expense', 'retirement_cost', retirementCost, gameState.currentTurn);
                     gameState.employees.splice(employeeIndex, 1);
@@ -663,7 +815,7 @@
             
             function handleDebtSubmit(e) {
                 e.preventDefault();
-                const action = dom.debtAction.value;
+                const action = uiState.debtAction;
                 const amount = parseInt(dom.debtAmount.value);
 
                 if (isNaN(amount) || amount <= 0) {
@@ -675,7 +827,7 @@
                     gameState.debt += amount;
                     gameState.cash += amount;
                     addTransaction('income', 'borrow', amount, gameState.currentTurn);
-                } else { // repay
+                } else {
                     if (amount > gameState.debt) {
                         alert('借入残高を超える返済はできません。');
                         return;
@@ -693,83 +845,245 @@
                 closeModal(dom.debtModal);
             }
 
-            // 設定保存のハンドラを新規追加
             function handleSettingsSubmit(e) {
                 e.preventDefault();
                 const newRate = parseFloat(dom.interestRateInput.value);
+                const gameLengthYears = parseInt(dom.gameLengthInput.value);
+
                 if (isNaN(newRate) || newRate < 0) {
                     alert('有効な金利をパーセントで入力してください。');
                     return;
                 }
-                gameState.interestRate = newRate / 100; // %を小数に変換して保存
+                if (isNaN(gameLengthYears) || gameLengthYears < 1 || gameLengthYears > 5) {
+                    alert('ゲームの長さは1〜5年の間で設定してください。');
+                    return;
+                }
+
+                gameState.interestRate = newRate / 100;
+                gameState.totalTurns = gameLengthYears * 12;
                 saveGame();
                 renderAll();
                 closeModal(dom.settingsModal);
             }
 
+            function handleBusinessSubmit(e) {
+                e.preventDefault();
+                const name = dom.businessForm.querySelector('#business-name').value.trim();
+                const revenue = parseInt(dom.businessForm.querySelector('#business-revenue').value);
+                const cost = parseInt(dom.businessForm.querySelector('#business-cost').value);
 
-            // --- モーダル制御 ---
+                if (!name) {
+                    alert('事業名を入力してください。');
+                    return;
+                }
+                if (isNaN(revenue) || revenue < 0 || isNaN(cost) || cost < 0) {
+                    alert('有効な売上と費用を万円単位で入力してください。');
+                    return;
+                }
+
+                gameState.businesses.push({ id: Date.now(), name, revenue, cost });
+                saveGame();
+                renderBusinessList();
+                dom.businessForm.reset();
+            }
+
+            async function handleDeleteBusiness(e) {
+                if (!e.target.classList.contains('delete-business-btn')) return;
+                const businessId = parseInt(e.target.dataset.id);
+                const confirmed = await showConfirmation(
+                    'この事業を削除しますか？この操作は元に戻せません。', 
+                    { danger: true }
+                );
+                if (confirmed) {
+                    gameState.businesses = gameState.businesses.filter(b => b.id !== businessId);
+                    saveGame();
+                    renderBusinessList();
+                }
+            }
+
+            // --- ★新規追加: リザルト表示 ---
+            function showResults() {
+                const { bs } = calculateFinancials('total');
+                const finalProfit = bs.retainedEarnings;
+                
+                const businessBonus = gameState.businesses.reduce((sum, biz) => {
+                    const monthlyProfit = biz.revenue - biz.cost;
+                    return sum + (monthlyProfit * 36);
+                }, 0);
+
+                const totalScore = finalProfit + businessBonus;
+
+                const formatYen = (val) => `${val.toLocaleString()}万円`;
+
+                dom.resultProfit.textContent = formatYen(finalProfit);
+                dom.resultBonus.textContent = `+ ${formatYen(businessBonus)}`;
+                dom.resultTotalScore.textContent = formatYen(totalScore);
+
+                openModal(dom.resultsModal);
+            }
+
+            // --- モーダル制御 & UI更新 ---
             function openModal(modal) {
                 modal.classList.remove('hidden');
             }
             function closeModal(modal) {
                 modal.classList.add('hidden');
+                if (modal.querySelector('form')) {
+                    modal.querySelector('form').reset();
+                }
+            }
+
+            function showConfirmation(message, options = {}) {
+                const {
+                    yesText = 'はい',
+                    noText = 'いいえ',
+                    danger = false
+                } = options;
+
+                dom.confirmMessage.textContent = message;
+                dom.confirmYesBtn.textContent = yesText;
+                dom.confirmNoBtn.textContent = noText;
+
+                dom.confirmYesBtn.classList.toggle('btn-danger', danger);
+                dom.confirmYesBtn.classList.toggle('btn-primary', !danger);
+
+                openModal(dom.confirmModal);
+
+                return new Promise((resolve) => {
+                    const yesHandler = () => {
+                        cleanup();
+                        resolve(true);
+                    };
+                    const noHandler = () => {
+                        cleanup();
+                        resolve(false);
+                    };
+                    const cleanup = () => {
+                        dom.confirmYesBtn.removeEventListener('click', yesHandler);
+                        dom.confirmNoBtn.removeEventListener('click', noHandler);
+                        closeModal(dom.confirmModal);
+                    };
+
+                    dom.confirmYesBtn.addEventListener('click', yesHandler, { once: true });
+                    dom.confirmNoBtn.addEventListener('click', noHandler, { once: true });
+                });
             }
             
-            function setupTransactionModal() {
-                const type = dom.transactionType.value;
-                dom.transactionCategory.innerHTML = CATEGORIES[type]
-                    .map(cat => `<option value="${cat.value}">${cat.text}</option>`)
-                    .join('');
+            function setupTransactionModalUI() {
+                const { type } = uiState.transaction;
+                
+                dom.transactionTypeSelector.querySelectorAll('button').forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.type === type);
+                });
+                
+                dom.transactionCategorySelector.innerHTML = '';
+                CATEGORIES[type].forEach(cat => {
+                    const button = document.createElement('button');
+                    button.type = 'button';
+                    button.dataset.category = cat.value;
+                    button.textContent = cat.text;
+                    button.className = 'btn';
+                    dom.transactionCategorySelector.appendChild(button);
+                });
+                uiState.transaction.category = '';
+            }
+            
+            function updatePeriodSelectorUI() {
+                dom.periodSelector.querySelectorAll('button').forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.period === uiState.reportPeriod);
+                });
             }
 
             // --- イベントリスナーの設定 ---
             document.getElementById('next-turn-btn').addEventListener('click', handleNextTurn);
             document.getElementById('reset-game-btn').addEventListener('click', resetGame);
             
-            // 設定ボタンのイベントリスナーを追加
             document.getElementById('settings-btn').addEventListener('click', () => {
-                // モーダルを開くときに現在の金利を%で表示
                 dom.interestRateInput.value = (gameState.interestRate * 100).toFixed(1);
+                dom.gameLengthInput.value = gameState.totalTurns / 12;
                 openModal(dom.settingsModal);
             });
             
-            // モーダル開閉
             document.getElementById('add-transaction-btn').addEventListener('click', () => {
-                setupTransactionModal();
+                uiState.transaction.type = 'expense';
+                setupTransactionModalUI();
                 openModal(dom.transactionModal);
             });
             document.getElementById('manage-employees-btn').addEventListener('click', () => openModal(dom.employeesModal));
             document.getElementById('manage-debt-btn').addEventListener('click', () => {
                 dom.currentDebt.textContent = `${gameState.debt.toLocaleString()}万円`;
+                uiState.debtAction = 'borrow';
+                dom.debtActionSelector.querySelectorAll('button').forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.action === uiState.debtAction);
+                });
                 openModal(dom.debtModal);
             });
 
-            // モーダル内の操作
+            document.getElementById('manage-business-btn').addEventListener('click', () => openModal(dom.businessModal));
+            dom.businessForm.addEventListener('submit', handleBusinessSubmit);
+            document.getElementById('close-business-modal').addEventListener('click', () => closeModal(dom.businessModal));
+            dom.businessList.addEventListener('click', handleDeleteBusiness);
+
+
             dom.transactionForm.addEventListener('submit', handleTransactionSubmit);
             document.getElementById('cancel-transaction').addEventListener('click', () => closeModal(dom.transactionModal));
-            dom.transactionType.addEventListener('change', setupTransactionModal);
+            dom.transactionTypeSelector.addEventListener('click', (e) => {
+                const type = e.target.closest('button')?.dataset.type;
+                if (type) {
+                    uiState.transaction.type = type;
+                    setupTransactionModalUI();
+                }
+            });
+            dom.transactionCategorySelector.addEventListener('click', (e) => {
+                const category = e.target.closest('button')?.dataset.category;
+                if (category) {
+                    uiState.transaction.category = category;
+                    dom.transactionCategorySelector.querySelectorAll('button').forEach(btn => {
+                        btn.classList.toggle('active', btn.dataset.category === category);
+                    });
+                }
+            });
 
-            dom.hireForm.addEventListener('submit', handleHireSubmit);
+            dom.hireOptions.addEventListener('click', handleHireClick);
             document.getElementById('close-employees-modal').addEventListener('click', () => closeModal(dom.employeesModal));
             dom.employeeList.addEventListener('click', handleFireEmployee);
-
+            
             dom.debtForm.addEventListener('submit', handleDebtSubmit);
             document.getElementById('cancel-debt').addEventListener('click', () => closeModal(dom.debtModal));
-
-            // 設定モーダルのイベントリスナーを追加
+            dom.debtActionSelector.addEventListener('click', (e) => {
+                const action = e.target.closest('button')?.dataset.action;
+                if (action) {
+                    uiState.debtAction = action;
+                    dom.debtActionSelector.querySelectorAll('button').forEach(btn => {
+                        btn.classList.toggle('active', btn.dataset.action === action);
+                    });
+                }
+            });
+            
             dom.settingsForm.addEventListener('submit', handleSettingsSubmit);
             document.getElementById('cancel-settings').addEventListener('click', () => closeModal(dom.settingsModal));
 
 
-            // レポートタブと期間セレクタ
             dom.reportTabs.addEventListener('click', e => {
                 if (e.target.tagName !== 'BUTTON') return;
                 dom.reportTabs.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
                 e.target.classList.add('active');
                 renderReport();
             });
-            dom.periodSelector.addEventListener('change', renderReport);
+            dom.periodSelector.addEventListener('click', e => {
+                const period = e.target.closest('button')?.dataset.period;
+                if (period) {
+                    uiState.reportPeriod = period;
+                    updatePeriodSelectorUI();
+                    renderReport();
+                }
+            });
+
+            // ★新規追加: リザルト画面の「新しいゲーム」ボタン
+            document.getElementById('new-game-btn').addEventListener('click', () => {
+                closeModal(dom.resultsModal);
+                resetGame();
+            });
 
 
             // --- 初期化処理の実行 ---
@@ -778,3 +1092,4 @@
     </script>
 </body>
 </html>
+
