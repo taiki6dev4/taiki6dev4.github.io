@@ -6,6 +6,7 @@
     <title>新規事業ボードゲーム 計算アプリ (プロトタイプ)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
             font-family: 'Noto Sans JP', sans-serif;
@@ -129,6 +130,12 @@
                 <button data-period="currentYear" class="btn rounded-none">今年度</button>
                 <button data-period="total" class="btn rounded-l-none active">通算</button>
             </div>
+
+            <!-- ★修正: メイン グラフコンテナ -->
+            <div id="chart-container" class="mb-4 h-64 relative">
+                <canvas id="main-chart"></canvas>
+            </div>
+
             <div id="report-content" class="overflow-x-auto">
                 <!-- 財務諸表テーブルがここに挿入されます -->
             </div>
@@ -282,7 +289,7 @@
         <div class="card w-full max-w-lg p-8 text-center">
             <h2 class="text-4xl font-bold mb-4 text-yellow-500">ゲーム終了！</h2>
             <h3 class="text-2xl font-semibold mb-6">最終結果</h3>
-            <div class="space-y-4 text-left text-lg bg-gray-50 p-4 rounded-lg mb-8">
+            <div class="space-y-4 text-left text-lg bg-gray-50 p-4 rounded-lg mb-6">
                 <div class="flex justify-between">
                     <span class="font-semibold">累計純利益:</span>
                     <span id="result-profit" class="font-bold"></span>
@@ -296,7 +303,24 @@
                     <span id="result-total-score"></span>
                 </div>
             </div>
-            <button id="new-game-btn" class="btn btn-primary w-full py-3 text-lg">新しいゲームを始める</button>
+            <!-- ★追加: リザルト画面の財務諸表タブ -->
+            <div class="mt-6">
+                 <div class="border-b border-gray-200 mb-4">
+                    <nav class="flex space-x-2 md:space-x-4" id="result-report-tabs">
+                        <button data-tab="pl" class="tab-button flex-1 md:flex-initial py-2 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition-colors active">最終PL</button>
+                        <button data-tab="bs" class="tab-button flex-1 md:flex-initial py-2 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition-colors">最終BS</button>
+                        <button data-tab="cs" class="tab-button flex-1 md:flex-initial py-2 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition-colors">最終CS</button>
+                    </nav>
+                </div>
+                <!-- ★追加: リザルト グラフコンテナ -->
+                <div id="result-chart-container" class="mb-4 h-64 relative">
+                    <canvas id="result-chart"></canvas>
+                </div>
+                <div id="result-report-content" class="overflow-x-auto text-left max-h-64">
+                    <!-- Final financial statements will be rendered here -->
+                </div>
+            </div>
+            <button id="new-game-btn" class="btn btn-primary w-full py-3 text-lg mt-8">新しいゲームを始める</button>
         </div>
     </div>
 
@@ -310,6 +334,12 @@
                 transaction: { type: 'expense', category: '' },
                 debtAction: 'borrow',
                 reportPeriod: 'total'
+            };
+            let finalFinancials = null; 
+            // ★修正: グラフインスタンスを管理
+            let chartInstances = {
+                main: null,
+                result: null
             };
 
             // --- DOM要素 ---
@@ -346,11 +376,15 @@
                 businessForm: document.getElementById('business-form'),
                 businessList: document.getElementById('business-list'),
                 gameLengthInput: document.getElementById('game-length-input'),
-                // ★新規追加: リザルトDOM
                 resultsModal: document.getElementById('results-modal'),
                 resultProfit: document.getElementById('result-profit'),
                 resultBonus: document.getElementById('result-bonus'),
                 resultTotalScore: document.getElementById('result-total-score'),
+                resultReportTabs: document.getElementById('result-report-tabs'),
+                resultReportContent: document.getElementById('result-report-content'),
+                // ★修正: グラフDOM
+                mainChart: document.getElementById('main-chart'),
+                resultChart: document.getElementById('result-chart'),
             };
 
             // --- 定数 ---
@@ -380,7 +414,6 @@
                 const savedState = localStorage.getItem('boardGameCalcState');
                 if (savedState) {
                     gameState = JSON.parse(savedState);
-                    // 後方互換性のためのデフォルト値設定
                     if (typeof gameState.interestRate === 'undefined') gameState.interestRate = CONSTANTS.DEFAULT_INTEREST_RATE;
                     if (typeof gameState.totalTurns === 'undefined') gameState.totalTurns = CONSTANTS.DEFAULT_TOTAL_TURNS;
                     if (typeof gameState.businesses === 'undefined') gameState.businesses = [];
@@ -389,6 +422,9 @@
                 }
                 updatePeriodSelectorUI();
                 renderAll();
+                 if (gameState.currentTurn > gameState.totalTurns) {
+                    showResults();
+                }
             }
             
             function createNewGame() {
@@ -431,7 +467,7 @@
             function renderDashboard() {
                 const year = Math.floor((gameState.currentTurn - 1) / 12) + 1;
                 const month = ((gameState.currentTurn - 1) % 12) + 1;
-                dom.turnDisplay.textContent = ` ${year}年目 ${month}月 (${gameState.currentTurn}/${gameState.totalTurns})`;
+                dom.turnDisplay.textContent = ` ${year}年目 ${month}月 (${gameState.currentTurn > gameState.totalTurns ? gameState.totalTurns : gameState.currentTurn}/${gameState.totalTurns})`;
                 
                 const formatYen = (val) => `${val.toLocaleString()}万円`;
                 const { pl, bs } = calculateFinancials('currentYear');
@@ -457,16 +493,49 @@
                 }
             }
             
+            // ★修正: グラフとテーブルを描画
             function renderReport() {
                 const activeTab = dom.reportTabs.querySelector('.active').dataset.tab;
-                const { pl, bs, cs } = calculateFinancials(uiState.reportPeriod);
+                const period = uiState.reportPeriod;
                 
+                // 1. 常にスナップショットデータを取得 (テーブル用)
+                const { pl, bs, cs } = calculateFinancials(period);
+                
+                // 2. テーブルHTMLを生成
                 let html = '';
                 if (activeTab === 'pl') html = generatePLHtml(pl);
                 else if (activeTab === 'bs') html = generateBSHtml(bs);
                 else if (activeTab === 'cs') html = generateCSHtml(cs);
-
                 dom.reportContent.innerHTML = html;
+
+                // 3. グラフを描画
+                if (chartInstances.main) {
+                    chartInstances.main.destroy();
+                    chartInstances.main = null;
+                }
+
+                const ctx = dom.mainChart.getContext('2d');
+                
+                if (period === 'lastTurn' || period === 'currentTurn') {
+                    // --- スナップショット・グラフ ---
+                    if (activeTab === 'pl') {
+                        chartInstances.main = createPLChart(ctx, pl);
+                    } else if (activeTab === 'bs') {
+                        chartInstances.main = createBSChart(ctx, bs);
+                    } else if (activeTab === 'cs') {
+                        chartInstances.main = createCSChart(ctx, cs);
+                    }
+                } else {
+                    // --- 時系列グラフ ---
+                    const timeSeriesData = generateTimeSeriesData(period);
+                    if (activeTab === 'pl') {
+                        chartInstances.main = createPLTimeSeriesChart(ctx, timeSeriesData);
+                    } else if (activeTab === 'bs') {
+                        chartInstances.main = createBSTimeSeriesChart(ctx, timeSeriesData);
+                    } else if (activeTab === 'cs') {
+                        chartInstances.main = createCSTimeSeriesChart(ctx, timeSeriesData);
+                    }
+                }
             }
             
             function generatePLHtml(pl) {
@@ -597,7 +666,222 @@
                 });
             }
 
-            // --- 計算ロジック ---
+            // --- ★修正: スナップショット・グラフ描画関数 ---
+            function createPLChart(ctx, plData) {
+                return new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['収益合計', '費用合計', '純利益'],
+                        datasets: [{
+                            label: '金額 (万円)',
+                            data: [plData.totalRevenue, plData.totalExpense, plData.profit],
+                            backgroundColor: [ 'rgba(54, 162, 235, 0.6)', 'rgba(255, 99, 132, 0.6)',
+                                plData.profit >= 0 ? 'rgba(75, 192, 192, 0.6)' : 'rgba(255, 26, 104, 0.6)' ],
+                            borderColor: [ 'rgba(54, 162, 235, 1)', 'rgba(255, 99, 132, 1)',
+                                plData.profit >= 0 ? 'rgba(75, 192, 192, 1)' : 'rgba(255, 26, 104, 1)' ],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+                });
+            }
+
+            function createBSChart(ctx, bsData) {
+                return new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['資産', '負債・純資産'],
+                        datasets: [
+                            { label: '現金', data: [bsData.cash, 0], backgroundColor: 'rgba(54, 162, 235, 0.6)' },
+                            { label: '事業投資額', data: [bsData.investmentValue, 0], backgroundColor: 'rgba(75, 192, 192, 0.6)' },
+                            { label: '借入金', data: [0, bsData.debt], backgroundColor: 'rgba(255, 99, 132, 0.6)' },
+                            { label: '外部投資', data: [0, bsData.externalInvestment], backgroundColor: 'rgba(255, 206, 86, 0.6)' },
+                            { label: '利益剰余金', data: [0, bsData.retainedEarnings], backgroundColor: 'rgba(153, 102, 255, 0.6)' }
+                        ]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } }, scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true } } }
+                });
+            }
+
+            function createCSChart(ctx, csData) {
+                const data = [csData.operatingCF, csData.investingCF, csData.financingCF, csData.netCashFlow];
+                return new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['営業CF', '投資CF', '財務CF', '現金増減額'],
+                        datasets: [{
+                            label: '金額 (万円)',
+                            data: data,
+                            backgroundColor: data.map(v => v >= 0 ? 'rgba(75, 192, 192, 0.6)' : 'rgba(255, 99, 132, 0.6)'),
+                            borderColor: data.map(v => v >= 0 ? 'rgba(75, 192, 192, 1)' : 'rgba(255, 99, 132, 1)'),
+                            borderWidth: 1
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+                });
+            }
+
+            // --- ★新規追加: 時系列グラフ描画関数 ---
+            function createPLTimeSeriesChart(ctx, timeSeriesData) {
+                return new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: timeSeriesData.labels,
+                        datasets: [{
+                            label: '累計純利益',
+                            data: timeSeriesData.cumulativeProfit,
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            fill: true,
+                            tension: 0.1
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true } }, scales: { y: { beginAtZero: true } } }
+                });
+            }
+
+            function createBSTimeSeriesChart(ctx, timeSeriesData) {
+                 return new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: timeSeriesData.labels,
+                        datasets: [
+                            {
+                                label: '総資産',
+                                data: timeSeriesData.totalAssets,
+                                borderColor: 'rgba(54, 162, 235, 1)',
+                                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                                fill: false,
+                                tension: 0.1
+                            },
+                            {
+                                label: '現金残高',
+                                data: timeSeriesData.cashBalance,
+                                borderColor: 'rgba(255, 206, 86, 1)',
+                                backgroundColor: 'rgba(255, 206, 86, 0.2)',
+                                fill: false,
+                                tension: 0.1
+                            }
+                        ]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true } }, scales: { y: { beginAtZero: true } } }
+                });
+            }
+
+            function createCSTimeSeriesChart(ctx, timeSeriesData) {
+                return new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: timeSeriesData.labels,
+                        datasets: [
+                            {
+                                label: '営業CF',
+                                data: timeSeriesData.monthlyOperatingCF,
+                                backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                            },
+                            {
+                                label: '投資CF',
+                                data: timeSeriesData.monthlyInvestingCF,
+                                backgroundColor: 'rgba(255, 159, 64, 0.6)',
+                            },
+                            {
+                                label: '財務CF',
+                                data: timeSeriesData.monthlyFinancingCF,
+                                backgroundColor: 'rgba(153, 102, 255, 0.6)',
+                            }
+                        ]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true } }, scales: { x: { stacked: true }, y: { stacked: true } } }
+                });
+            }
+
+
+            // --- ★新規追加: 時系列データ生成ロジック ---
+            function generateTimeSeriesData(period) {
+                let startTurn = 1;
+                let endTurn = gameState.currentTurn;
+
+                if (period === 'currentYear') {
+                    const currentYear = Math.floor((gameState.currentTurn - 1) / 12);
+                    startTurn = currentYear * 12 + 1;
+                }
+                
+                const labels = [];
+                const cumulativeProfit = [];
+                const cashBalance = [];
+                const totalAssets = [];
+                const monthlyOperatingCF = [];
+                const monthlyInvestingCF = [];
+                const monthlyFinancingCF = [];
+
+                let currentCash = CONSTANTS.INITIAL_CASH;
+                let currentDebt = 0;
+                let currentInvestmentValue = 0;
+                let currentExternalInvestment = 0;
+                let currentCumulativeProfit = 0;
+
+                const allTransactions = gameState.transactions;
+
+                for (let turn = 1; turn < endTurn; turn++) {
+                    const turnTransactions = allTransactions.filter(t => t.turn === turn);
+                    
+                    // 月次のPLとCFを計算
+                    const monthlyPL = { totalRevenue: 0, totalExpense: 0 };
+                    const monthlyCS = { operating: 0, investing: 0, financing: 0 };
+                    
+                    monthlyCS.financing += CONSTANTS.MONTHLY_SUPPORT;
+                    
+                    turnTransactions.forEach(t => {
+                        switch(t.category) {
+                            case 'business_income': monthlyPL.totalRevenue += t.amount; monthlyCS.operating += t.amount; break;
+                            case 'misc_income': monthlyPL.totalRevenue += t.amount; monthlyCS.operating += t.amount; break;
+                            
+                            case 'business_cost': monthlyPL.totalExpense += t.amount; monthlyCS.operating -= t.amount; break;
+                            case 'personnel_cost': monthlyPL.totalExpense += t.amount; monthlyCS.operating -= t.amount; break;
+                            case 'retirement_cost': monthlyPL.totalExpense += t.amount; monthlyCS.operating -= t.amount; break;
+                            case 'interest_expense': monthlyPL.totalExpense += t.amount; monthlyCS.operating -= t.amount; break;
+                            case 'misc_expense': monthlyPL.totalExpense += t.amount; monthlyCS.operating -= t.amount; break;
+
+                            case 'hypothesis_testing': monthlyPL.totalExpense += t.amount; monthlyCS.investing -= t.amount; break;
+                            case 'business_construction': monthlyPL.totalExpense += t.amount; monthlyCS.investing -= t.amount; break;
+                            
+                            case 'external_investment': monthlyCS.financing += t.amount; break;
+                            case 'borrow': monthlyCS.financing += t.amount; break;
+                            case 'repay': monthlyCS.financing -= t.amount; break;
+                        }
+                    });
+                    
+                    const monthlyNetCF = monthlyCS.operating + monthlyCS.investing + monthlyCS.financing;
+                    currentCash += monthlyNetCF;
+                    currentCumulativeProfit += (monthlyPL.totalRevenue - monthlyPL.totalExpense);
+                    
+                    // 月末のBS項目を計算
+                    currentDebt += (turnTransactions.filter(t => t.category === 'borrow').reduce((s, t) => s + t.amount, 0));
+                    currentDebt -= (turnTransactions.filter(t => t.category === 'repay').reduce((s, t) => s + t.amount, 0));
+                    
+                    currentInvestmentValue += (turnTransactions.filter(t => t.category === 'hypothesis_testing' || t.category === 'business_construction').reduce((s, t) => s + t.amount, 0));
+                    currentExternalInvestment += CONSTANTS.MONTHLY_SUPPORT + (turnTransactions.filter(t => t.category === 'external_investment').reduce((s, t) => s + t.amount, 0));
+                    
+                    const currentTotalAssets = currentCash + currentInvestmentValue;
+                    
+                    if (turn >= startTurn) {
+                        const year = Math.floor((turn - 1) / 12) + 1;
+                        const month = ((turn - 1) % 12) + 1;
+                        labels.push(`${year}年${month}月`);
+                        cumulativeProfit.push(currentCumulativeProfit);
+                        cashBalance.push(currentCash);
+                        totalAssets.push(currentTotalAssets);
+                        monthlyOperatingCF.push(monthlyCS.operating);
+                        monthlyInvestingCF.push(monthlyCS.investing);
+                        monthlyFinancingCF.push(monthlyCS.financing);
+                    }
+                }
+                
+                return { labels, cumulativeProfit, cashBalance, totalAssets, monthlyOperatingCF, monthlyInvestingCF, monthlyFinancingCF };
+            }
+
+
+            // --- 計算ロジック (スナップショット) ---
             function calculateFinancials(period) {
                 let startTurn = 1;
                 let endTurn = gameState.currentTurn;
@@ -656,6 +940,7 @@
                 cs.financingCF = cs.financing.support + cs.financing.externalInvestment + cs.financing.borrowing - cs.financing.repayment;
                 cs.netCashFlow = cs.operatingCF + cs.investingCF + cs.financingCF;
                 
+                // BSは常に「現在」のスナップショット (period === 'total' の場合と同じ)
                 const allTransactions = gameState.transactions.filter(t => t.turn < gameState.currentTurn);
                 const bs = { cash: gameState.cash, debt: gameState.debt };
                 bs.investmentValue = allTransactions
@@ -901,9 +1186,10 @@
                 }
             }
 
-            // --- ★新規追加: リザルト表示 ---
+            // --- ★修正: リザルト表示 ---
             function showResults() {
-                const { bs } = calculateFinancials('total');
+                finalFinancials = calculateFinancials('total');
+                const { pl, bs, cs } = finalFinancials;
                 const finalProfit = bs.retainedEarnings;
                 
                 const businessBonus = gameState.businesses.reduce((sum, biz) => {
@@ -918,6 +1204,16 @@
                 dom.resultProfit.textContent = formatYen(finalProfit);
                 dom.resultBonus.textContent = `+ ${formatYen(businessBonus)}`;
                 dom.resultTotalScore.textContent = formatYen(totalScore);
+
+                // デフォルトで最終PLのグラフとテーブルを表示
+                if (chartInstances.result) chartInstances.result.destroy();
+                dom.resultReportTabs.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+                
+                dom.resultReportTabs.querySelector('[data-tab="pl"]').classList.add('active');
+                
+                const ctx = dom.resultChart.getContext('2d');
+                chartInstances.result = createPLChart(ctx, pl); // リザルトはスナップショットでOK
+                dom.resultReportContent.innerHTML = generatePLHtml(pl);
 
                 openModal(dom.resultsModal);
             }
@@ -1013,6 +1309,7 @@
             document.getElementById('manage-debt-btn').addEventListener('click', () => {
                 dom.currentDebt.textContent = `${gameState.debt.toLocaleString()}万円`;
                 uiState.debtAction = 'borrow';
+                // ★修正: ここを uiState.debtAction で比較する
                 dom.debtActionSelector.querySelectorAll('button').forEach(btn => {
                     btn.classList.toggle('active', btn.dataset.action === uiState.debtAction);
                 });
@@ -1079,7 +1376,36 @@
                 }
             });
 
-            // ★新規追加: リザルト画面の「新しいゲーム」ボタン
+            // ★修正: リザルト画面のタブ切り替えリスナー
+            dom.resultReportTabs.addEventListener('click', e => {
+                if (e.target.tagName !== 'BUTTON' || !finalFinancials) return;
+                
+                dom.resultReportTabs.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+                e.target.classList.add('active');
+                
+                const activeTab = e.target.dataset.tab;
+                const { pl, bs, cs } = finalFinancials;
+                let html = '';
+
+                if (chartInstances.result) {
+                    chartInstances.result.destroy();
+                    chartInstances.result = null;
+                }
+                const ctx = dom.resultChart.getContext('2d');
+
+                if (activeTab === 'pl') {
+                    chartInstances.result = createPLChart(ctx, pl);
+                    html = generatePLHtml(pl);
+                } else if (activeTab === 'bs') {
+                    chartInstances.result = createBSChart(ctx, bs);
+                    html = generateBSHtml(bs);
+                } else if (activeTab === 'cs') {
+                    chartInstances.result = createCSChart(ctx, cs);
+                    html = generateCSHtml(cs);
+                }
+                dom.resultReportContent.innerHTML = html;
+            });
+            
             document.getElementById('new-game-btn').addEventListener('click', () => {
                 closeModal(dom.resultsModal);
                 resetGame();
