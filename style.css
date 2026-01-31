@@ -1,0 +1,24 @@
+body { font-family: 'Noto Sans JP', sans-serif; }
+.game-title { font-family: 'Orbitron', sans-serif; }
+
+/* アニメーション定義 */
+@keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+@keyframes pulseRing { 0% { transform: scale(0.95); opacity: 1; } 50% { transform: scale(1.05); opacity: 0.7; } 100% { transform: scale(0.95); opacity: 1; } }
+
+/* ユーティリティクラス */
+.animate-bounce { animation: bounce 2s infinite; }
+.fade-in { animation: fadeIn 0.5s ease-out; }
+.pulse-slow { animation: pulse 2s infinite; }
+.pulse-ring { animation: pulseRing 2s infinite; }
+
+/* チュートリアル関連 */
+.tutorial-overlay { background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(2px); z-index: 100; }
+.tutorial-highlight { box-shadow: 0 0 0 4px rgba(168, 85, 247, 0.8), 0 0 30px rgba(168, 85, 247, 0.6); animation: pulseRing 2s infinite; position: relative; z-index: 101; }
+.tutorial-popup { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); max-width: 800px; width: 90%; z-index: 102; }
+
+/* ゲームパーツ */
+.rank-badge { width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 1.25rem; flex-shrink: 0; }
+.rank-1 { background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); box-shadow: 0 0 20px rgba(251, 191, 36, 0.5); }
+.dice { width: 60px; height: 60px; background: white; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 2rem; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
