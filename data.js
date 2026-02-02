@@ -165,8 +165,8 @@ function renderTutorialStart(step) {
         },
         phase: {
             emoji: '📊',
-            title: '次はフェーズを進ませる流れを見ていきましょう！',
-            description: 'フェーズを進ませるとは、どういうことでしょうか？',
+            title: '次はアイディアのフェーズを進ませる流れを見ていきましょう！',
+            description: '',
             content: `
                 <div class="bg-slate-800 p-8 rounded-xl border border-slate-700 max-w-3xl mx-auto">
                     <h3 class="text-xl font-bold mb-6 text-center">🎲 実際のプレイでは...</h3>

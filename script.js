@@ -80,7 +80,7 @@ const tutorialSteps = [
             {
                 title: "📊 新規事業の3つのフェーズ",
                 content: `
-                    <p class="text-slate-200 text-center mb-8 text-lg">新規事業にはこんなフェーズがあります</p>
+                    <p class="text-slate-200 text-center mb-8 text-lg">新規事業には3つのフェーズがあります</p>
                     <p class="text-slate-300 text-center mb-8">アイデアに必要な人材を配置して、判定に成功するとフェーズが進みます</p>
                     <div class="space-y-4">
                         <div class="bg-gradient-to-r from-purple-900/50 to-purple-800/30 p-6 rounded-xl border-2 border-purple-500">
@@ -339,7 +339,7 @@ const tutorialSteps = [
                             <div class="space-y-4 text-base text-slate-200">
                                 <div class="flex items-center gap-3">
                                     <span class="text-xl">🎴</span>
-                                    <p><span class="font-bold text-purple-200">人材カード</span>を配置</p>
+                                    <p>アイディアに<span class="font-bold text-purple-200">人材</span>を配置</p>
                                 </div>
                                 <div class="flex items-center gap-3">
                                     <span class="text-xl">🎲</span>
@@ -376,7 +376,7 @@ const tutorialSteps = [
                                 <p class="text-green-100 font-bold">ターンの最後に毎回実施します</p>
                             </div>
                             <div class="flex-1 text-center md:text-right">
-                                <p class="text-xl text-white font-bold mb-1">ボタンを押します <span class="text-sm">➡</span> 自動計算されます</p>
+                                <p class="text-xl text-white font-bold mb-1">終了ボタンを押すと、人件費と事業の収益が自動計算されます</p>
                             </div>
                         </div>
                     </div>
@@ -425,23 +425,23 @@ const tutorialSteps = [
         type: 'phase-explanation',
         slides: [
             // 12枚目: タイトル変更
-            {
-                title: "🚀 アイディアのフェーズを進ませる",
-                content: `
-                    <div class="max-w-4xl mx-auto space-y-8">
-                        <div class="bg-gradient-to-r from-purple-900/50 to-purple-800/30 p-8 rounded-2xl border-2 border-purple-500">
-                            <h3 class="text-2xl font-bold text-purple-300 mb-6 text-center">🎲 実際のプレイでは...</h3>
-                            <div class="space-y-6 text-slate-200 text-lg">
-                                <div class="bg-slate-900/50 p-6 rounded-xl">
-                                    <p class="font-bold text-purple-200 mb-3">1️⃣ 自分のターンになったら</p>
-                                    <p class="leading-relaxed">「人材を雇う」か「フェーズを進ませる」を選びます。</p>
-                                    <p class="leading-relaxed mt-2">フェーズを進ませることを選んだら、アイデアカードを1つ選びます。</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `
-            },
+            // {
+            //     title: "🚀 アイディアのフェーズを進ませる",
+            //     content: `
+            //         <div class="max-w-4xl mx-auto space-y-8">
+            //             <div class="bg-gradient-to-r from-purple-900/50 to-purple-800/30 p-8 rounded-2xl border-2 border-purple-500">
+            //                 <h3 class="text-2xl font-bold text-purple-300 mb-6 text-center">🎲 実際のプレイでは...</h3>
+            //                 <div class="space-y-6 text-slate-200 text-lg">
+            //                     <div class="bg-slate-900/50 p-6 rounded-xl">
+            //                         <p class="font-bold text-purple-200 mb-3">1️⃣ 自分のターンになったら</p>
+            //                         <p class="leading-relaxed">「人材を雇う」か「フェーズを進ませる」を選びます。</p>
+            //                         <p class="leading-relaxed mt-2">フェーズを進ませることを選んだら、アイデアカードを1つ選びます。</p>
+            //                     </div>
+            //                 </div>
+            //             </div>
+            //         </div>
+            //     `
+            // },
             // 14枚目: 説明更新
             {
                 title: "📊 フェーズを進ませるとは？",
