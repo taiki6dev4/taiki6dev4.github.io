@@ -65,7 +65,7 @@ const tutorialSteps = [
                             <h3 class="text-2xl font-bold text-slate-200 mb-4 text-center">🏆 勝利条件</h3>
                             <p class="text-lg text-slate-300 text-center mb-4">終了時にスコアが高かった人が勝ちです。</p>
                             <p class="text-xl font-bold text-green-400 text-center mb-3">スコア ＝ 現金 ＋ 事業価値</p>
-                            <p class="text-base text-slate-300 text-center">※ 事業価値 = 1年間で上げる利益（月間利益 × 12ヶ月）</p>
+                            <p class="text-base text-slate-300 text-center">※ 事業価値 = 1年間で上げる利益（月間利益 × 36ヶ月）</p>
                         </div>
 
                         <div class="p-6 bg-blue-900/30 border-2 border-blue-500 rounded-xl">
@@ -136,7 +136,6 @@ const tutorialSteps = [
                                 <div class="p-4 bg-blue-900/30 border border-blue-600 rounded-lg">
                                     <p class="text-sm text-blue-300 font-bold mb-1">必要能力</p>
                                     <p class="text-sm text-slate-200">低い</p>
-                                    <p class="text-xs text-slate-400">(営業力1など)</p>
                                 </div>
                             </div>
                         </div>
@@ -181,7 +180,6 @@ const tutorialSteps = [
                                 <div class="p-4 bg-blue-900/30 border border-blue-600 rounded-lg">
                                     <p class="text-sm text-blue-300 font-bold mb-1">必要能力</p>
                                     <p class="text-sm text-slate-200">高い</p>
-                                    <p class="text-xs text-slate-400">(営業力6など)</p>
                                 </div>
                             </div>
                         </div>
@@ -481,7 +479,7 @@ const tutorialSteps = [
                                                 </div>
                                                 <div class="bg-green-900/50 p-3 rounded flex justify-between items-center">
                                                     <span class="font-bold text-green-300 text-sm">構築</span>
-                                                    <span class="text-slate-300 text-sm">合計: 8</span>
+                                                    <span class="text-slate-300 text-sm">企画: 2 / 営業: 5 / 技術: 5</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -506,7 +504,7 @@ const tutorialSteps = [
                                     <p class="font-bold mb-2">🎴 アイディア</p>
                                     <p class="text-xs text-purple-200 mb-1">現在のフェーズ: 仮説立案</p>
                                     <div class="bg-black/40 p-2 rounded text-sm font-bold text-white">
-                                        必要: 企画2 / 営業1
+                                        企画2 / 営業1
                                     </div>
                                 </div>
 
@@ -546,7 +544,7 @@ const tutorialSteps = [
                             
                             <div class="bg-slate-900/50 p-6 rounded-xl mb-6 text-center">
                                 <p class="text-xl text-slate-200 font-bold mb-2">
-                                    ダイスの目 <span class="text-yellow-400 text-2xl">≧</span> アイディアカードに書いてあるX以上
+                                    ダイスの目 <span class="text-yellow-400 text-2xl">≧</span> アイディアに記載されている値
                                 </p>
                                 <p class="text-sm text-slate-400">ダイスを振ってそれ以上が出たら成功になります。</p>
                             </div>
