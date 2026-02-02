@@ -425,24 +425,24 @@ const tutorialSteps = [
         type: 'phase-explanation',
         slides: [
             // 12枚目: タイトル変更
-            // {
-            //     title: "🚀 アイディアのフェーズを進ませる",
-            //     content: `
-            //         <div class="max-w-4xl mx-auto space-y-8">
-            //             <div class="bg-gradient-to-r from-purple-900/50 to-purple-800/30 p-8 rounded-2xl border-2 border-purple-500">
-            //                 <h3 class="text-2xl font-bold text-purple-300 mb-6 text-center">🎲 実際のプレイでは...</h3>
-            //                 <div class="space-y-6 text-slate-200 text-lg">
-            //                     <div class="bg-slate-900/50 p-6 rounded-xl">
-            //                         <p class="font-bold text-purple-200 mb-3">1️⃣ 自分のターンになったら</p>
-            //                         <p class="leading-relaxed">「人材を雇う」か「フェーズを進ませる」を選びます。</p>
-            //                         <p class="leading-relaxed mt-2">フェーズを進ませることを選んだら、アイデアカードを1つ選びます。</p>
-            //                     </div>
-            //                 </div>
-            //             </div>
-            //         </div>
-            //     `
-            // },
-            // 14枚目: 説明更新
+            {
+                title: "🚀 アイディアのフェーズを進ませる",
+                content: `
+                    <div class="max-w-4xl mx-auto space-y-8">
+                        <div class="bg-gradient-to-r from-purple-900/50 to-purple-800/30 p-8 rounded-2xl border-2 border-purple-500">
+                            <h3 class="text-2xl font-bold text-purple-300 mb-6 text-center">🎲 実際のプレイでは...</h3>
+                            <div class="space-y-6 text-slate-200 text-lg">
+                                <div class="bg-slate-900/50 p-6 rounded-xl">
+                                    <p class="font-bold text-purple-200 mb-3">1️⃣ 自分のターンになったら</p>
+                                    <p class="leading-relaxed">「人材を雇う」か「フェーズを進ませる」を選びます。</p>
+                                    <p class="leading-relaxed mt-2">フェーズを進ませることを選んだら、アイデアカードを1つ選びます。</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            14枚目: 説明更新
             {
                 title: "📊 フェーズを進ませるとは？",
                 content: `
@@ -580,7 +580,7 @@ const tutorialSteps = [
                             <div class="space-y-6 text-slate-200 text-lg">
                                 <div class="bg-slate-900/50 p-6 rounded-xl">
                                     <p class="font-bold text-purple-200 mb-3">🎲 ボードゲーム側</p>
-                                    <p class="leading-relaxed">アイデアカードを「完成」エリアに移動させます。</p>
+                                    <p class="leading-relaxed">アイデアカードを「ビジネス構築」エリアに移動させます。</p>
                                     <p class="leading-relaxed mt-2">このアイデアは事業として収益を生み出すようになります！</p>
                                 </div>
 
