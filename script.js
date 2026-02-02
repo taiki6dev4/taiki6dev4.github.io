@@ -418,7 +418,7 @@ const tutorialSteps = [
     { type: 'tutorial-start', section: 'phase', message: '次はフェーズを進ませる流れを見ていきましょう！' },
     { 
         type: 'guide', 
-        message: 'これから5つのステップで\nフェーズ進行の流れを説明します。\n\n準備ができたらOKを押してください。', 
+        message: 'これから4つのステップで\nフェーズ進行の流れを説明します。\n\n準備ができたらOKを押してください。', 
         highlight: null 
     },
     {
