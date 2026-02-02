@@ -223,7 +223,7 @@ function renderGameScreen() {
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                 <div>
                     <h1 class="game-title text-3xl md:text-4xl mb-2 bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent font-black">
-                        事業ボードゲーム
+                        ロんチ
                     </h1>
                     <div class="flex flex-wrap items-center gap-3">
                         <div class="text-sm text-slate-400">

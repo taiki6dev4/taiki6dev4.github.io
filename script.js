@@ -5,13 +5,13 @@ const tutorialSteps = [
         type: 'intro',
         slides: [
             {
-                title: "🎮 事業ボードゲームへようこそ！",
+                title: "🎮 ロんチへようこそ！",
                 content: `
                     <div class="space-y-8">
                         <div class="text-center">
                             <div class="text-6xl mb-4">🚀</div>
                             <h2 class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 mb-4">
-                                事業ボードゲーム
+                                ロんチ
                             </h2>
                             <p class="text-xl font-bold text-slate-200 leading-relaxed mb-4">
                                 新規事業を立ち上げ、成長させて<br>
