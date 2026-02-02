@@ -504,7 +504,7 @@ const tutorialSteps = [
                                     <p class="font-bold mb-2">🎴 アイディア</p>
                                     <p class="text-xs text-purple-200 mb-1">現在のフェーズ: 仮説立案</p>
                                     <div class="bg-black/40 p-2 rounded text-sm font-bold text-white">
-                                        企画2 / 営業1
+                                        企画2 / 営業2
                                     </div>
                                 </div>
 
@@ -525,7 +525,7 @@ const tutorialSteps = [
                                 <div class="text-center mt-4 p-4 bg-slate-900/50 rounded-lg border border-slate-700 w-full max-w-lg">
                                     <p class="text-lg font-bold text-green-400 mb-2">合計能力値</p>
                                     <p class="text-slate-300">企画: <span class="font-bold text-white">3</span> (>=2) OK!</p>
-                                    <p class="text-slate-300">営業: <span class="font-bold text-white">2</span> (>=1) OK!</p>
+                                    <p class="text-slate-300">営業: <span class="font-bold text-white">2</span> (>=2) OK!</p>
                                 </div>
 
                                 <p class="text-yellow-300 font-bold mt-2">※ 複数人を配置して、必要能力を満たすようにします</p>
