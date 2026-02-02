@@ -442,7 +442,7 @@ const tutorialSteps = [
                     </div>
                 `
             },
-            14枚目: 説明更新
+            // 14枚目: 説明更新
             {
                 title: "📊 フェーズを進ませるとは？",
                 content: `
