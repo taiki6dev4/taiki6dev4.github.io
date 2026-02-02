@@ -637,13 +637,12 @@ if (businessForm) {
         const step = tutorialSteps[currentStep];
         
         const name = document.getElementById('business-name-input').value;
-        const size = document.getElementById('business-size-input').value;
         const profit = parseInt(document.getElementById('business-profit-input').value);
         const cost = parseInt(document.getElementById('business-cost-input').value);
-        
+
         playerCash -= cost;
-        
-        businesses.push({ id: Date.now(), name, size, profit, cost });
+
+        businesses.push({ id: Date.now(), name, profit, cost });
         updateBusinessList();
         
         document.getElementById('business-name-input').value = '';
@@ -667,9 +666,8 @@ function updateBusinessList() {
             const value = biz.profit * 12;
             return `
                 <div class="p-4 bg-slate-900 rounded-lg border border-slate-700">
-                    <div class="flex justify-between items-start mb-2">
+                    <div class="mb-2">
                         <h4 class="font-bold text-lg">${biz.name}</h4>
-                        <span class="px-2 py-1 bg-slate-800 border border-slate-600 text-slate-300 text-xs font-bold rounded">${biz.size}</span>
                     </div>
                     <div class="grid grid-cols-2 gap-2 text-sm">
                         <div class="${biz.profit >= 0 ? 'text-green-400' : 'text-red-400'}">
